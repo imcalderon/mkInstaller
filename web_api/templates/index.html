@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installer Database Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 30px;
+        }
+        .footer {
+            padding-top: 20px;
+            color: #777;
+            border-top: 1px solid #e5e5e5;
+            margin-top: 30px;
+        }
+        .tab-pane {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Installer Database Manager</h1>
+            <p class="lead">Manage products, features, files, and shortcuts for the installer system</p>
+        </div>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="true">Products</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab" aria-controls="features" aria-selected="false">Features</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button" role="tab" aria-controls="files" aria-selected="false">Files</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="shortcuts-tab" data-bs-toggle="tab" data-bs-target="#shortcuts" type="button" role="tab" aria-controls="shortcuts" aria-selected="false">Shortcuts</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="directories-tab" data-bs-toggle="tab" data-bs-target="#directories" type="button" role="tab" aria-controls="directories" aria-selected="false">Directories</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Products Tab -->
+            <div class="tab-pane fade show active" id="products" role="tabpanel" aria-labelledby="products-tab">
+                <h3>Products</h3>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                        Add Product
+                    </button>
+                </div>
+                <table class="table table-striped" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Version</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Product rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Features Tab -->
+            <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
+                <h3>Features</h3>
+                <div class="mb-3">
+                    <select class="form-select" id="productSelect">
+                        <option selected>Select a product...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" id="addFeatureBtn" data-bs-toggle="modal" data-bs-target="#addFeatureModal" disabled>
+                        Add Feature
+                    </button>
+                </div>
+                <table class="table table-striped" id="featuresTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Feature rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Files Tab -->
+            <div class="tab-pane fade" id="files" role="tabpanel" aria-labelledby="files-tab">
+                <h3>Files</h3>
+                <div class="mb-3">
+                    <select class="form-select" id="featureSelect">
+                        <option selected>Select a feature...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" id="addFileBtn" data-bs-toggle="modal" data-bs-target="#addFileModal" disabled>
+                        Add File
+                    </button>
+                </div>
+                <table class="table table-striped" id="filesTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Path</th>
+                            <th>Install Path</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- File rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Shortcuts Tab -->
+            <div class="tab-pane fade" id="shortcuts" role="tabpanel" aria-labelledby="shortcuts-tab">
+                <h3>Shortcuts</h3>
+                <div class="mb-3">
+                    <select class="form-select" id="featureSelectForShortcuts">
+                        <option selected>Select a feature...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" id="addShortcutBtn" data-bs-toggle="modal" data-bs-target="#addShortcutModal" disabled>
+                        Add Shortcut
+                    </button>
+                </div>
+                <table class="table table-striped" id="shortcutsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Target</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Shortcut rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Directories Tab -->
+            <div class="tab-pane fade" id="directories" role="tabpanel" aria-labelledby="directories-tab">
+                <h3>Directories</h3>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDirectoryModal">
+                        Add Directory
+                    </button>
+                </div>
+                <table class="table table-striped" id="directoriesTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Directory rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for adding a product -->
+        <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addProductForm">
+                            <div class="mb-3">
+                                <label for="productName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="productName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="productVersion" class="form-label">Version</label>
+                                <input type="text" class="form-control" id="productVersion" value="1.0.0">
+                            </div>
+                            <div class="mb-3">
+                                <label for="productDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="saveProductBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for adding a feature -->
+        <div class="modal fade" id="addFeatureModal" tabindex="-1" aria-labelledby="addFeatureModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addFeatureModalLabel">Add Feature</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addFeatureForm">
+                            <div class="mb-3">
+                                <label for="featureName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="featureName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="featureDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="featureDescription" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="saveFeatureBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for adding a file -->
+        <div class="modal fade" id="addFileModal" tabindex="-1" aria-labelledby="addFileModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addFileModalLabel">Add File</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addFileForm">
+                            <div class="mb-3">
+                                <label for="filePath" class="form-label">Path</label>
+                                <input type="text" class="form-control" id="filePath" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fileInstallPath" class="form-label">Install Path (optional)</label>
+                                <input type="text" class="form-control" id="fileInstallPath">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="saveFileBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for adding a shortcut -->
+        <div class="modal fade" id="addShortcutModal" tabindex="-1" aria-labelledby="addShortcutModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addShortcutModalLabel">Add Shortcut</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addShortcutForm">
+                            <div class="mb-3">
+                                <label for="shortcutName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="shortcutName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="shortcutTarget" class="form-label">Target</label>
+                                <input type="text" class="form-control" id="shortcutTarget" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="saveShortcutBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for adding a directory -->
+        <div class="modal fade" id="addDirectoryModal" tabindex="-1" aria-labelledby="addDirectoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addDirectoryModalLabel">Add Directory</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addDirectoryForm">
+                            <div class="mb-3">
+                                <label for="directoryName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="directoryName" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="saveDirectoryBtn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 Installer Database Manager</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load products on page load
+            fetchProducts();
+            fetchDirectories();
+
+            // Product selection change
+            document.getElementById('productSelect').addEventListener('change', function() {
+                const productId = this.value;
+                if (productId !== 'Select a product...') {
+                    document.getElementById('addFeatureBtn').removeAttribute('disabled');
+                    fetchFeatures(productId);
+                } else {
+                    document.getElementById('addFeatureBtn').setAttribute('disabled', 'disabled');
+                    clearTable('featuresTable');
+                }
+            });
+
+            // Feature selection change
+            document.getElementById('featureSelect').addEventListener('change', function() {
+                const featureId = this.value;
+                if (featureId !== 'Select a feature...') {
+                    document.getElementById('addFileBtn').removeAttribute('disabled');
+                    fetchFiles(featureId);
+                } else {
+                    document.getElementById('addFileBtn').setAttribute('disabled', 'disabled');
+                    clearTable('filesTable');
+                }
+            });
+
+            // Feature selection change for shortcuts
+            document.getElementById('featureSelectForShortcuts').addEventListener('change', function() {
+                const featureId = this.value;
+                if (featureId !== 'Select a feature...') {
+                    document.getElementById('addShortcutBtn').removeAttribute('disabled');
+                    fetchShortcuts(featureId);
+                } else {
+                    document.getElementById('addShortcutBtn').setAttribute('disabled', 'disabled');
+                    clearTable('shortcutsTable');
+                }
+            });
+
+            // Save product
+            document.getElementById('saveProductBtn').addEventListener('click', function() {
+                const name = document.getElementById('productName').value;
+                const version = document.getElementById('productVersion').value;
+                const description = document.getElementById('productDescription').value;
+                
+                if (!name) {
+                    alert('Product name is required!');
+                    return;
+                }
+                
+                fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        version: version,
+                        description: description
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+                    document.getElementById('addProductForm').reset();
+                    fetchProducts();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error adding product');
+                });
+            });
+
+            // Save feature
+            document.getElementById('saveFeatureBtn').addEventListener('click', function() {
+                const name = document.getElementById('featureName').value;
+                const description = document.getElementById('featureDescription').value;
+                const productId = document.getElementById('productSelect').value;
+                
+                if (!name) {
+                    alert('Feature name is required!');
+                    return;
+                }
+                
+                fetch(`/api/products/${productId}/features`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById('addFeatureModal')).hide();
+                    document.getElementById('addFeatureForm').reset();
+                    fetchFeatures(productId);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error adding feature');
+                });
+            });
+
+            // Save file
+            document.getElementById('saveFileBtn').addEventListener('click', function() {
+                const path = document.getElementById('filePath').value;
+                const installPath = document.getElementById('fileInstallPath').value;
+                const featureId = document.getElementById('featureSelect').value;
+                
+                if (!path) {
+                    alert('File path is required!');
+                    return;
+                }
+                
+                fetch(`/api/features/${featureId}/files`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        path: path,
+                        install_path: installPath
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById('addFileModal')).hide();
+                    document.getElementById('addFileForm').reset();
+                    fetchFiles(featureId);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error adding file');
+                });
+            });
+
+            // Save shortcut
+            document.getElementById('saveShortcutBtn').addEventListener('click', function() {
+                const name = document.getElementById('shortcutName').value;
+                const target = document.getElementById('shortcutTarget').value;
+                const featureId = document.getElementById('featureSelectForShortcuts').value;
+                
+                if (!name || !target) {
+                    alert('Shortcut name and target are required!');
+                    return;
+                }
+                
+                fetch(`/api/features/${featureId}/shortcuts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        target: target
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById('addShortcutModal')).hide();
+                    document.getElementById('addShortcutForm').reset();
+                    fetchShortcuts(featureId);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error adding shortcut');
+                });
+            });
+
+            // Save directory
+            document.getElementById('saveDirectoryBtn').addEventListener('click', function() {
+                const name = document.getElementById('directoryName').value;
+                
+                if (!name) {
+                    alert('Directory name is required!');
+                    return;
+                }
+                
+                fetch('/api/directories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById('addDirectoryModal')).hide();
+                    document.getElementById('addDirectoryForm').reset();
+                    fetchDirectories();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Error adding directory');
+                });
+            });
+        });
+
+        // Fetch all products
+        function fetchProducts() {
+            fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                // Update products table
+                const tbody = document.querySelector('#productsTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${product.id}</td>
+                        <td>${product.name}</td>
+                        <td>${product.version}</td>
+                        <td>${product.description}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger delete-product" data-id="${product.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Update product select dropdown
+                const productSelect = document.getElementById('productSelect');
+                productSelect.innerHTML = '<option selected>Select a product...</option>';
+                
+                data.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.name;
+                    productSelect.appendChild(option);
+                });
+                
+                // Add event listeners for delete buttons
+                document.querySelectorAll('.delete-product').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        if (confirm('Are you sure you want to delete this product?')) {
+                            deleteProduct(id);
+                        }
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Fetch features for a product
+        function fetchFeatures(productId) {
+            fetch(`/api/products/${productId}/features`)
+            .then(response => response.json())
+            .then(data => {
+                // Update features table
+                const tbody = document.querySelector('#featuresTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(feature => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${feature.id}</td>
+                        <td>${feature.name}</td>
+                        <td>${feature.description}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger delete-feature" data-id="${feature.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Update feature select dropdowns
+                const featureSelect = document.getElementById('featureSelect');
+                const featureSelectForShortcuts = document.getElementById('featureSelectForShortcuts');
+                featureSelect.innerHTML = '<option selected>Select a feature...</option>';
+                featureSelectForShortcuts.innerHTML = '<option selected>Select a feature...</option>';
+                
+                data.forEach(feature => {
+                    const option1 = document.createElement('option');
+                    option1.value = feature.id;
+                    option1.textContent = feature.name;
+                    featureSelect.appendChild(option1);
+                    
+                    const option2 = document.createElement('option');
+                    option2.value = feature.id;
+                    option2.textContent = feature.name;
+                    featureSelectForShortcuts.appendChild(option2);
+                });
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Fetch files for a feature
+        function fetchFiles(featureId) {
+            fetch(`/api/features/${featureId}/files`)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('#filesTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(file => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${file.id}</td>
+                        <td>${file.path}</td>
+                        <td>${file.install_path || ''}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger delete-file" data-id="${file.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Fetch shortcuts for a feature
+        function fetchShortcuts(featureId) {
+            fetch(`/api/features/${featureId}/shortcuts`)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('#shortcutsTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(shortcut => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${shortcut.id}</td>
+                        <td>${shortcut.name}</td>
+                        <td>${shortcut.target}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger delete-shortcut" data-id="${shortcut.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Fetch all directories
+        function fetchDirectories() {
+            fetch('/api/directories')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('#directoriesTable tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(directory => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${directory.id}</td>
+                        <td>${directory.name}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger delete-directory" data-id="${directory.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Add event listeners for delete buttons
+                document.querySelectorAll('.delete-directory').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        if (confirm('Are you sure you want to delete this directory?')) {
+                            deleteDirectory(id);
+                        }
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Helper to clear table
+        function clearTable(tableId) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            tbody.innerHTML = '';
+        }
+
+        // Delete a product
+        function deleteProduct(id) {
+            fetch(`/api/products/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                fetchProducts();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error deleting product');
+            });
+        }
+
+        // Delete a directory
+        function deleteDirectory(id) {
+            fetch(`/api/directories/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                fetchDirectories();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Error deleting directory');
+            });
+        }
+    </script>
+</body>
+</html>
