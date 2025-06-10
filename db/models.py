@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text, Boolean, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, backref
 import uuid
 import datetime
 
@@ -36,7 +36,7 @@ class Feature(Base):
     files = relationship('File', back_populates='feature', cascade="all, delete-orphan")
     shortcuts = relationship('Shortcut', back_populates='feature', cascade="all, delete-orphan")
     components = relationship('Component', order_by='Component.id', back_populates='feature')
-    sub_features = relationship('Feature', backref=relationship.backref('parent', remote_side=[id]))
+    sub_features = relationship('Feature', backref=backref('parent', remote_side=[id]))
 
 class Component(Base):
     __tablename__ = 'components'

@@ -20,7 +20,7 @@ class Options:
     main_root = root_path
     bindirname = 'bin'
     project_bin = os.path.join(root_path, 'bin')
-    project_name = 'ExampleProduct'
+    project_name = 'ExampleApp'
     # Output directory configuration
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'out'))
     # Add more as needed for your actions
@@ -41,8 +41,8 @@ state = InstallerState(opts, args, configs)
 state.goals = [
     'setenv',
     'query_db',
-    'buildmsi',
     'create_cabs',
+    'buildmsi',
     'make_pfw'
 ]
 state.goal_map = {

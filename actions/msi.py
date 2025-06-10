@@ -45,29 +45,13 @@ class InstallerBuildMSIAction(InstallerAction):
             shutil.rmtree(temp_root)
             return
             
-        # Prepare CAB
-        cab_dir = os.path.abspath('build_cab_temp')
-        os.makedirs(cab_dir, exist_ok=True)
-        
-        for fname in copied_files:
-            src = os.path.join(temp_installdir, fname)
-            dst = os.path.join(cab_dir, fname)
-            shutil.copy2(src, dst)
-            
-        cab_name = f"{state.library.project_name}.cab"
-        cab_path = os.path.join(output_dir, cab_name)
-        
-        # Create CAB file using makecab
-        cmd = f'makecab /D CompressionType=LZX /D CompressionMemory=21 /D CabinetName1={cab_name} /D DiskDirectory1={output_dir} {cab_dir}\\*.*'
-        result = os.system(cmd)
-        
-        if result != 0:
-            logging.error(f"Failed to create CAB file with command: {cmd}")
-            shutil.rmtree(cab_dir)
+        # Check if CAB was created by create_cabs action
+        if not hasattr(state.library, 'cab_name') or not hasattr(state.library, 'cab_path'):
+            logging.error("CAB file not found. Make sure create_cabs action ran successfully.")
             shutil.rmtree(temp_root)
             return
             
-        shutil.rmtree(cab_dir)
+        cab_name = state.library.cab_name
         
         # Create MSI (fix Directory args, ensure _logical is not None)
         msi_name = f"{state.library.project_name}.msi"
