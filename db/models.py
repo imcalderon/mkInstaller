@@ -134,6 +134,62 @@ class InstallerMeta(Base):
     value = Column(Text)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+class Icon(Base):
+    __tablename__ = 'icons'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)  # Icon identifier for MSI
+    data = Column(Text)  # Base64 encoded icon data or path to icon file
+    source_path = Column(String)  # Original source path of the icon file
+    product_id = Column(Integer, ForeignKey('products.id'))
+    product = relationship('Product')
+
+class RegistryEntry(Base):
+    """Extended registry entry model with additional MSI-specific fields"""
+    __tablename__ = 'registry_entries'
+    id = Column(Integer, primary_key=True)
+    root = Column(Integer, nullable=False)  # MSI root key: -1=HKMU, 0=HKCR, 1=HKCU, 2=HKLM, 3=HKU
+    key = Column(String, nullable=False)  # Registry key path
+    name = Column(String)  # Value name (NULL for default value)
+    value = Column(String)  # Registry value (can include MSI properties like [INSTALLDIR])
+    value_type = Column(String, default='REG_SZ')  # REG_SZ, REG_DWORD, REG_EXPAND_SZ, etc.
+    component_id = Column(Integer, ForeignKey('components.id'))
+    component = relationship('Component')
+    feature_id = Column(Integer, ForeignKey('features.id'))
+    feature = relationship('Feature')
+
+class RedistFile(Base):
+    """Redistributable files (VCRedist, .NET, etc.)"""
+    __tablename__ = 'redist_files'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)  # Display name (e.g., "Visual C++ 2019 Redistributable")
+    filename = Column(String, nullable=False)  # Actual filename
+    path = Column(String)  # Path to the redistributable
+    version = Column(String)  # Version of the redistributable
+    cpu = Column(String, default='x64')  # Target architecture: x86, x64, arm64
+    install_command = Column(String)  # Command to run for silent install
+    install_args = Column(String)  # Arguments for silent install
+    detection_key = Column(String)  # Registry key to detect if already installed
+    required = Column(Boolean, default=True)  # Is this redistributable required?
+    product_id = Column(Integer, ForeignKey('products.id'))
+    product = relationship('Product')
+
+class FileAssociation(Base):
+    """File type associations for the installer"""
+    __tablename__ = 'file_associations'
+    id = Column(Integer, primary_key=True)
+    extension = Column(String, nullable=False)  # File extension (e.g., ".myapp")
+    prog_id = Column(String, nullable=False)  # Programmatic ID (e.g., "MyApp.Document")
+    description = Column(String)  # Description (e.g., "MyApp Document")
+    content_type = Column(String)  # MIME type (e.g., "application/x-myapp")
+    icon_id = Column(Integer, ForeignKey('icons.id'))
+    icon = relationship('Icon')
+    default_icon_index = Column(Integer, default=0)  # Icon index within the icon file
+    open_command = Column(String)  # Command to open files (e.g., "[INSTALLDIR]myapp.exe" "%1")
+    component_id = Column(Integer, ForeignKey('components.id'))
+    component = relationship('Component')
+    feature_id = Column(Integer, ForeignKey('features.id'))
+    feature = relationship('Feature')
+
 # --- Usage Example ---
 # engine = create_engine('sqlite:///installer.db')
 # Base.metadata.create_all(engine)

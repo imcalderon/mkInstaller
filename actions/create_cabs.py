@@ -36,7 +36,7 @@ class CreateCabsAction(InstallerAction):
 
         cab_name = f"{state.library.project_name}.cab"
         cab_path = os.path.join(output_dir, cab_name)
-        print("Files in build_cab_temp:", os.listdir(r"E:\proj\mkInstaller\build_cab_temp"))
+        logging.debug(f"Files in cab_dir: {os.listdir(cab_dir)}")
         # Create CAB file using makecab
         cmd = f'makecab /D CompressionType=LZX /D CompressionMemory=21 /D CabinetName1={cab_name} /D DiskDirectory1={output_dir} {cab_dir}\\*.*'
         result = os.system(cmd)
