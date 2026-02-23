@@ -74,32 +74,35 @@ class InstallerBuildMSIAction(InstallerAction):
         
         msilib.add_tables(db, sequence)
         
-        # Use msilib Directory correctly
+        # Standard Properties
+        add_data(db, 'Property', [
+            ("SourceDir", os.path.abspath(temp_root)),
+            ("DefaultUIFont", "WixUI_Font_Normal"),
+        ])
+        
+        # Use msilib Directory correctly for hierarchy
         cab = CAB(state.library.project_name)
+        rootdir = Directory(db, cab, None, 'TARGETDIR', 'SourceDir', 'TARGETDIR')
+        rootdir.start_type = 0 # root
         
-        # Root directory: basedir must be None for TARGETDIR
-        rootdir = Directory(db, cab, None, 'TARGETDIR', 'TARGETDIR', 'TARGETDIR')
-        installdir = Directory(db, cab, rootdir, 'INSTALLDIR', 'INSTALLDIR', 'Install Folder')
+        # Files go into a subfolder of ProgramFiles
+        pfiles = Directory(db, cab, rootdir, 'ProgramFilesFolder', 'PFiles', 'ProgramFilesFolder')
+        installdir = Directory(db, cab, pfiles, 'INSTALLDIR', 'MANIFOLD', state.library.project_name)
         
-        # Files are in the File table. We need a component first.
-        # msilib.init_database already created a default feature named 'DefaultFeature'
+        # Create feature
+        feature_obj = Feature(db, 'DefaultFeature', 'Default', 'Main Feature', 1)
+        feature_obj.set_current()
         
-        file_data = []
         for i, f in enumerate(state.library.files, 1):
             fname = os.path.basename(f.path)
-            # File, Component_, FileName, FileSize, Version, Language, Attributes, Sequence
-            file_data.append((f"file_{i}", "comp_Main", fname, f.size, f.version, None, f.attributes, i))
-        
-        # Register the component
-        add_data(db, 'Component', [("comp_Main", msilib.gen_uuid(), "INSTALLDIR", 0, None, "file_1")])
-        # Map component to the existing feature
-        add_data(db, 'FeatureComponents', [("DefaultFeature", "comp_Main")])
-        # Add the files
-        add_data(db, 'File', file_data)
+            # Use absolute source for the add_file call to ensure it's found in temp_root
+            src = os.path.join(temp_installdir, fname)
+            
+            # Use installdir.add_file to correctly register in File and Component tables
+            installdir.add_file(fname, src=src)
         
         # Add Media table entry pointing to our CAB (already created by create_cabs)
-        # DiskId, LastSequence, DiskPrompt, Cabinet, VolumeLabel, Source
-        add_data(db, 'Media', [(1, len(file_data), None, "#" + cab_name, None, None)])
+        add_data(db, 'Media', [(1, len(state.library.files), None, "#" + cab_name, None, None)])
         
         # Commit the database
         db.Commit()
