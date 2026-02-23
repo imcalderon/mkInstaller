@@ -238,6 +238,10 @@ def scan_directory_to_db(source_dir, config=None, config_file=None, interactive=
         if not target_dir:
             target_dir = prompt_user("Target installation directory", 
                                      f"[ProgramFilesFolder]\\{product_manufacturer}\\{product_name}")
+    else:
+        # Fallback for non-interactive mode
+        if not target_dir:
+            target_dir = f"[ProgramFilesFolder]\\{product_manufacturer}\\{product_name}"
     
     # Validate required fields
     if not product_name:

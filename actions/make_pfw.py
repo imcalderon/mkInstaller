@@ -1,4 +1,4 @@
-from core.action import InstallerAction
+﻿from core.action import InstallerAction
 import logging
 import os
 import subprocess
@@ -19,7 +19,7 @@ class InstallerMakePFWAction(InstallerAction):
     name = 'make_pfw'
 
     # Default path to ModernArchive executable - can be overridden via options
-    DEFAULT_ARCHIVE_EXE = r'E:\proj\ModernArchive\build\Release\archive.exe'
+    DEFAULT_ARCHIVE_EXE = r'C:\Users\ivanm\ModernArchive\build\archive-2.0.0.exe'
 
     def do(self, state):
         output_dir = getattr(state.library.options, 'output_dir', os.path.abspath('out'))
@@ -65,8 +65,20 @@ class InstallerMakePFWAction(InstallerAction):
                 temp_msi = os.path.join(temp_dir, msi_filename)
                 shutil.copy2(msi_path, temp_msi)
 
-                # Copy additional files if any
+                # 1. Add all files from state.library.files (e.g. DLLs)
+                # These should be adjacent to the MSI in the temp extraction dir
                 files_to_archive = [temp_msi]
+                for f_obj in state.library.files:
+                    # Skip the executable itself if it's already in the CAB/MSI
+                    # but for PFW we usually want DLLs to be available during/after install
+                    src = getattr(f_obj, 'abs_source', os.path.join(state.library.root_path, f_obj.path))
+                    if os.path.exists(src):
+                        dest = os.path.join(temp_dir, os.path.basename(src))
+                        if not os.path.exists(dest):
+                            shutil.copy2(src, dest)
+                            files_to_archive.append(dest)
+
+                # 2. Add additional files if any (legacy support)
                 for additional_file in additional_files:
                     if os.path.exists(additional_file):
                         dest = os.path.join(temp_dir, os.path.basename(additional_file))
@@ -135,3 +147,4 @@ class InstallerMakePFWAction(InstallerAction):
         except Exception as e:
             logging.error(f"Fallback copy also failed: {e}")
             state.library.pfw_path = None
+

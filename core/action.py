@@ -7,6 +7,19 @@ step in the install creation process.
 class InstallerAction(object):
     name = "Base Action"
     goal = "None"
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if hasattr(cls, 'name') and cls.name != "Base Action":
+            InstallerAction._registry[cls.name] = cls
+
+    @classmethod
+    def get_action(cls, name):
+        action_cls = cls._registry.get(name)
+        if action_cls:
+            return action_cls()
+        return None
 
     def __init__(self):
         """Simple init. Make sure to call super when overriding."""

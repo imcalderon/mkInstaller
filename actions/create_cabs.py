@@ -26,27 +26,33 @@ class CreateCabsAction(InstallerAction):
         cab_dir = os.path.abspath('build_cab_temp')
         os.makedirs(cab_dir, exist_ok=True)
 
-        # Copy files to the CAB directory
-        for f in state.library.files:
-            src = os.path.join(state.library.root_path, f.path)
-            dst = os.path.join(cab_dir, f.path)
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            shutil.copy2(src, dst)
-            logging.info(f"Copied {src} to {dst}")
-
+        # Prepare CAB configuration
         cab_name = f"{state.library.project_name}.cab"
         cab_path = os.path.join(output_dir, cab_name)
-        logging.debug(f"Files in cab_dir: {os.listdir(cab_dir)}")
+
+        # Copy files to the CAB directory
+        with open('cabs.ddf', 'w') as ddf:
+            ddf.write(".OPTION EXPLICIT\n")
+            ddf.write(".Set CabinetName1=" + cab_name + "\n")
+            ddf.write(".Set DiskDirectoryTemplate=" + output_dir + "\n")
+            ddf.write(".Set Cabinet=on\n")
+            ddf.write(".Set Compress=on\n")
+            for f in state.library.files:
+                src = getattr(f, 'abs_source', os.path.join(state.library.root_path, f.path))
+                ddf.write(f'"{src}" "{f.path}"\n')
+                logging.info(f"Added {src} to DDF")
+
         # Create CAB file using makecab
-        cmd = f'makecab /D CompressionType=LZX /D CompressionMemory=21 /D CabinetName1={cab_name} /D DiskDirectory1={output_dir} {cab_dir}\\*.*'
+        cmd = f'makecab /F cabs.ddf'
         result = os.system(cmd)
         
         if result != 0:
             logging.error(f"Failed to create CAB file with command: {cmd}")
-            shutil.rmtree(cab_dir)
             return
             
-        shutil.rmtree(cab_dir)
+        if os.path.exists('cabs.ddf'): os.remove('cabs.ddf')
+        if os.path.exists('setup.inf'): os.remove('setup.inf')
+        if os.path.exists('setup.rpt'): os.remove('setup.rpt')
         
         # Store CAB path in state for MSI action to use
         state.library.cab_path = os.path.join(output_dir, cab_name)

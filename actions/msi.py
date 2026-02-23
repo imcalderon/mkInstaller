@@ -32,7 +32,7 @@ class InstallerBuildMSIAction(InstallerAction):
         
         copied_files = []
         for f in state.library.files:
-            src = os.path.join(state.library.root_path, f.path)
+            src = getattr(f, 'abs_source', os.path.join(state.library.root_path, f.path))
             fname = os.path.basename(f.path)
             dst = os.path.join(temp_installdir, fname)
             if os.path.exists(src):
@@ -53,17 +53,23 @@ class InstallerBuildMSIAction(InstallerAction):
             
         cab_name = state.library.cab_name
         
-        # Create MSI (fix Directory args, ensure _logical is not None)
+        # Create MSI
         msi_name = f"{state.library.project_name}.msi"
         msi_path = os.path.join(output_dir, msi_name)
+        
+        # Ensure we have a clean file
+        if os.path.exists(msi_path): os.remove(msi_path)
+
+        manufacturer = getattr(state.library.options, 'manufacturer', 'Example Manufacturer')
+        version = state.library.product_info.get('version', '1.0.0')
         
         db = msilib.init_database(
             msi_path, 
             schema, 
             state.library.project_name, 
             msilib.gen_uuid(), 
-            state.library.product_info.get('version', '1.0.0'), 
-            'Example Manufacturer'
+            version, 
+            manufacturer
         )
         
         msilib.add_tables(db, sequence)
@@ -75,31 +81,25 @@ class InstallerBuildMSIAction(InstallerAction):
         rootdir = Directory(db, cab, None, 'TARGETDIR', 'TARGETDIR', 'TARGETDIR')
         installdir = Directory(db, cab, rootdir, 'INSTALLDIR', 'INSTALLDIR', 'Install Folder')
         
-        # Create feature
-        feature_obj = Feature(db, 'DefaultFeature', 'Default Feature', 'Everything', 1)
-        feature_obj.set_current()
+        # Files are in the File table. We need a component first.
+        # msilib.init_database already created a default feature named 'DefaultFeature'
         
-        # Add files to CAB and MSI
-        for fname in copied_files:
-            file_path = os.path.join(temp_installdir, fname)
-            cabfile = os.path.basename(file_path)
-            
-            # Add file to CAB
-            _, component = cab.append(file_path, cabfile)
-            
-            # Add file to MSI
-            installdir.add_file(
-                cabfile,
-                src=file_path,
-                version=None,
-                language=None
-            )
-            
-        # Commit the CAB file
-        cab.commit(db)
+        file_data = []
+        for i, f in enumerate(state.library.files, 1):
+            fname = os.path.basename(f.path)
+            # File, Component_, FileName, FileSize, Version, Language, Attributes, Sequence
+            file_data.append((f"file_{i}", "comp_Main", fname, f.size, f.version, None, f.attributes, i))
         
-        # Add Media table entry
-        add_data(db, 'Media', [(1, cab_name, None, None, None, None)])
+        # Register the component
+        add_data(db, 'Component', [("comp_Main", msilib.gen_uuid(), "INSTALLDIR", 0, None, "file_1")])
+        # Map component to the existing feature
+        add_data(db, 'FeatureComponents', [("DefaultFeature", "comp_Main")])
+        # Add the files
+        add_data(db, 'File', file_data)
+        
+        # Add Media table entry pointing to our CAB (already created by create_cabs)
+        # DiskId, LastSequence, DiskPrompt, Cabinet, VolumeLabel, Source
+        add_data(db, 'Media', [(1, len(file_data), None, "#" + cab_name, None, None)])
         
         # Commit the database
         db.Commit()
@@ -108,6 +108,11 @@ class InstallerBuildMSIAction(InstallerAction):
         state.library.msi_path = msi_path
         
         # Clean up
-        shutil.rmtree(temp_root)
+        def remove_readonly(func, path, excinfo):
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+            
+        import stat
+        shutil.rmtree(temp_root, onerror=remove_readonly)
         
         logging.info(f"Installer built at: {state.library.msi_path}")
